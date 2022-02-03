@@ -1,9 +1,11 @@
 # PADA
 
-### Official code repository for the TACL'22 paper - ["PADA: Example-based Prompt Learning for on-the-fly Adaptation to Unseen Domains"](https://arxiv.org/abs/2102.12206)
+### Official code repository for the  paper ["PADA: Example-based Prompt Learning for on-the-fly Adaptation to Unseen Domains"](https://arxiv.org/abs/2102.12206) (TACL'2022)
  
 PADA is an example-based prompt generation model, which adapts on-the-fly to unseen domains (or distributions in general).
 It is trained on labeled data from multiple domains, and when presented with new examples (from unknown domains), it performs an autoregressive inference: (1) First generating an example-specific signature that maps the input example to the semantic space spanned by its training domains (denoted as DRFs); and then (2) it casts the generated signature as a prompt (prefix) and performs the downstream task. 
+
+![PADA](figures/PADA.png)
 
 If you use this code please cite our paper (see recommended citation below).
 
@@ -22,7 +24,7 @@ conda env create --file pada_env.yml
 conda activate pada
 ```
 
-## Training
+## Training a PADA Model
 You can run all the steps below for all our experiments for a given task (Rumor Detection `rumor` or Aspect Prediction `absa`) with a single command, by running the `run-rumor-train-experiments.sh` script:
 ```
 bash run-rumor-train-experiments.sh
@@ -86,7 +88,7 @@ For each source domain, this code creates a file with annotated prompt per each 
 
 ### 4. Training PADA
 
-Train PADA on the prompt-generation task and the downstream task (conditioned on the annotated-prompts). Then. evaluate PADA on examples from the target domain where it first generates a prompt and then condition on this generated prompt, it performs the downstream task.   
+Train PADA both on the prompt-generation task and the downstream task (conditioned on the annotated-prompts). Then, evaluate PADA on data from the target domain, where for each example it first generates a prompt and then it performs the downstream task conditioned on its self generated prompt.   
 
 ```
 CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
@@ -103,7 +105,55 @@ The final results are saved in the following path:
   "./runs/<TASK_NAME>/<TRG_DOMAIN>/PADA/e<NUM_EPOCHS>/b<TRAIN_BATCH_SIZE>/a<ALPHA_VAL>/test_results.txt".
   For rumor detection and aspect prediction, we report the final binary-F1 score on the target domain, denoted as 'test_binary_f1'.
 
+## Evaluating Trained PADA Models
+You can evaluate checkpoints for all our experiments for a given task (Rumor Detection `rumor` or Aspect Prediction `absa`), by downloading the model files from [here](https://mega.nz/folder/AOBShToQ#tFEUfUq5uYoXexGT39OUwg), extracting them to a designated directory `CKPT_PATH` and running the `run-rumor-eval-checkpoints.sh` script:
+```
+bash run-rumor-eval-checkpoints.sh
+```
 
+Evaluating a single trained PADA model checkpoint consists of the following steps:
+
+1. Create an experimental setup - Choose a single target domain of a given task (e.g., _charliehebdo_ from 'Rumor Detection') and its corresponding source domains (_ferguson_, _germanwings-crash_, _ottawashooting_, _sydneysiege_). 
+2. Download the model files from [here](https://mega.nz/folder/AOBShToQ#tFEUfUq5uYoXexGT39OUwg) and extract them to a designated directory `CKPT_PATH`.
+3. Run PADA - evaluate the trained PADA model checkpoint on its target domain test set.
+
+Next, we go through these steps using our running example:
+- Task - Rumor Detection.
+- Source domains - _ferguson_, _germanwings-crash_, _ottawashooting_, _sydneysiege_.
+- Target domain - _charliehebdo_
+We use a specific set of hyperparameters (please refer to our paper for more details).
+
+### 1. Create an experimental setup
+```
+GPU_ID=<ID of GPU>
+PYTHONPATH=<path to repository root>
+TOKENIZERS_PARALLELISM=false
+
+TASK_NAME=rumor
+ROOT_DATA_DIR=${TASK_NAME}_data
+SRC_DOMAINS=ferguson,germanwings-crash,ottawashooting,sydneysiege
+TRG_DOMAIN=charliehebdo
+
+EVAL_BATCH_SIZE=<desired batch size>
+CKPT_PATH=<path to model files>
+```
+
+### 2. Evaluate PADA on target domain data 
+
+Evaluate a trained PADA model checkpoint on data from the target domain. For each example, PADA first generates a prompt and then it performs the downstream task conditioned on its self generated prompt.
+
+```
+CUDA_VISIBLE_DEVICES=${GPU_ID} python ./eval.py \
+  --dataset_name ${TASK_NAME} \
+  --src_domains ${SRC_DOMAINS} \
+  --trg_domain ${TRG_DOMAIN} \
+  --eval_batch_size ${EVAL_BATCH_SIZE} \
+  --ckpt_path ${CKPT_PATH}
+```
+
+The final results are saved in the following path: 
+  "./runs/<TASK_NAME>/<TRG_DOMAIN>/PADA/eval-ckpt/test_results.txt".
+  For rumor detection and aspect prediction, we report the final binary-F1 score on the target domain (of the best performing model on the source dev data), denoted as 'test_binary_f1'.
 
 
 ## How to Cite PADA
