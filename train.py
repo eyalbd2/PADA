@@ -1,5 +1,7 @@
 from src.utils.constants import DATA_DIR, EXP_DIR
+from src.data_processing.absa.pada import AbsaSeq2SeqPadaDataProcessor, AbsaSeq2SeqPadaDataset
 from src.data_processing.rumor.pada import RumorPadaDataProcessor, RumorPadaDataset
+from src.modeling.token_classification.pada_seq2seq_token_classifier import PadaSeq2SeqTokenClassifierGeneratorMulti
 from src.modeling.text_classification.pada_text_classifier import PadaTextClassifierMulti
 from src.utils.train_utils import set_seed, ModelCheckpointWithResults, LoggingCallback
 from pathlib import Path
@@ -9,11 +11,11 @@ from syct import timer
 
 SUPPORTED_MODELS = {
     "PADA-rumor": (PadaTextClassifierMulti, RumorPadaDataProcessor, RumorPadaDataset),
+    "PADA-absa": (PadaSeq2SeqTokenClassifierGeneratorMulti, AbsaSeq2SeqPadaDataProcessor, AbsaSeq2SeqPadaDataset),
 }
 
 SUPPORTED_DATASETS = {
     "rumor",
-    "mnli",
     "absa"
 }
 
@@ -54,7 +56,7 @@ args_dict = dict(
     max_drf_seq_len=20,
     proportion_aspect=0.3333,
     gen_constant=1.0,
-    multi_diversity_penalty=1.0,
+    multi_diversity_penalty=0.2,
 )
 
 
@@ -72,12 +74,7 @@ def train_pada_experiment(args):
     hparams.output_dir.mkdir(exist_ok=True, parents=True)
     hparams.output_dir = str(hparams.output_dir)
 
-    if hparams.dataset_name == "mnli":
-        hparams.gen_constant = 0.01
-        hparams.eval_metrics = [met for met in hparams.eval_metrics if met != "binary_f1"]
-        main_eval_metric = "macro_f1"
-    else:
-        main_eval_metric = "binary_f1"
+    main_eval_metric = "binary_f1"
     checkpoint_callback = ModelCheckpointWithResults(dirpath=hparams.output_dir,
                                                      filename=f"best_dev_{main_eval_metric}",
                                                      monitor=f"dev_{main_eval_metric}",
@@ -107,7 +104,7 @@ def train_pada_experiment(args):
 
     set_seed(model_hparams_dict.pop("seed"))
     dataset_name = model_hparams_dict.pop("dataset_name")
-    if dataset_name in ["rumor", "mnli"]:
+    if dataset_name  == "rumor":
         model_hparams_dict.pop("proportion_aspect")
         model_hparams_dict.pop("multi_diversity_penalty")
     else:

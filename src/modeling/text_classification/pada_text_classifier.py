@@ -1,3 +1,4 @@
+from argparse import Namespace
 from collections import defaultdict
 from torch import Tensor, LongTensor
 from typing import List, Union, Dict, Tuple
@@ -8,8 +9,15 @@ import torch as pt
 
 class PadaTextClassifier(T5TextClassifier):
 
-    def __init__(self, mixture_alpha: float, max_drf_seq_len: int, gen_constant: float = 1.0, **kwargs):
-        super().__init__(dataset_specific_kwargs=dict(mixture_alpha=mixture_alpha, max_drf_seq_len=max_drf_seq_len), **kwargs)
+    def __init__(self, mixture_alpha: float = 0.2, max_drf_seq_len: int = 20, gen_constant: float = 1.0, **kwargs):
+        ### Backward compatibility hack
+        if "dataset_specific_kwargs" in kwargs:
+            super().__init__(**kwargs)
+        else:
+            dataset_specific_kwargs = Namespace(
+                **{"mixture_alpha": mixture_alpha, "max_drf_seq_len": max_drf_seq_len})
+            super().__init__(dataset_specific_kwargs=dataset_specific_kwargs, **kwargs)
+            self.save_hyperparameters(dataset_specific_kwargs, gen_constant)
         self.gen_constant = gen_constant
         self.tokenized_domain_prompt = PadaTextClassifier._init_tokenized_domain_prompt(self.datasets['dev'].DOMAIN_PROMPT, self.tokenizer)
 
@@ -144,7 +152,7 @@ class PadaTextClassifier(T5TextClassifier):
 
 class PadaTextClassifierMulti(PadaTextClassifier):
 
-    def __init__(self, num_return_sequences: int, **kwargs):
+    def __init__(self, num_return_sequences: int = 4, **kwargs):
         super().__init__(**kwargs)
         self.save_hyperparameters()
 

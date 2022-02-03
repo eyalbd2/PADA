@@ -11,13 +11,6 @@ Our code is implemented in [PyTorch](https://pytorch.org/), using the [Transform
 
 ## Usage Instructions
 
-Running an experiment with PADA consists of the following steps:
-
-1. Create an experimental setup - Choose a single target domain of a given task (e.g., _charliehebdo_ from 'Rumor Detection') and its corresponding source domains (_ferguson_, _germanwings-crash_, _ottawashooting_, _sydneysiege_). 
-2. Extract the DRF sets for each of the source domains. 
-3. Annotate training examples with DRF-based prompts.
-4. Run PADA - train PADA on the prompt-annotated training set and test it on the target domain test set.
-
 Before diving into our running example of how to run PADA, make sure your virtual environment includes all requirements (specified in 'pada_env.yml').
 
 We ran our experiments on a single NVIDIA Quadro RTX 6000 24GB GPU, CUDA 11.1 and PyTorch 1.7.1.
@@ -29,36 +22,40 @@ conda env create --file pada_env.yml
 conda activate pada
 ```
 
+## Training
+You can run all the steps below for all our experiments for a given task (Rumor Detection `rumor` or Aspect Prediction `absa`) with a single command, by running the `run-rumor-train-experiments.sh` script:
+```
+bash run-rumor-train-experiments.sh
+```
+
+Running a single experiment with PADA consists of the following steps:
+
+1. Define an experimental setup - Choose a single target domain of a given task (e.g., _charliehebdo_ from 'Rumor Detection') and its corresponding source domains (_ferguson_, _germanwings-crash_, _ottawashooting_, _sydneysiege_). 
+2. Extract the DRF sets for each of the source domains. 
+3. Annotate training examples with DRF-based prompts.
+4. Run PADA - train PADA on the prompt-annotated training set and test it on the target domain test set.
+
 Next, we go through these steps using our running example:
 - Task - Rumor Detection.
 - Source domains - _ferguson_, _germanwings-crash_, _ottawashooting_, _sydneysiege_.
 - Target domain - _charliehebdo_
-We use a specific set of hyperparameters (please refer to our paper for more details). 
+We use a specific set of hyperparameters (please refer to our paper for more details).
 
-
-Notice, you can run all the above steps with a single command by running the `run-rumor-experiments.sh` script:
-```
-bash run-rumor-experiments.sh
-```
-
-### 1. Create an experimental setup
+### 1. Define an experimental setup
 ```
 GPU_ID=<ID of GPU>
 PYTHONPATH=<path to repository root>
 TOKENIZERS_PARALLELISM=false
 
 TASK_NAME=rumor
-ROOT_DATA_DIR=rumor_data
-SOURCES=(ferguson germanwings-crash ottawashooting sydneysiege)
-SRC_DOMAINS=$(echo ${SOURCES[*]} | tr ' ' ',')
+ROOT_DATA_DIR=${TASK_NAME}_data
+SRC_DOMAINS=ferguson,germanwings-crash,ottawashooting,sydneysiege
 TRG_DOMAIN=charliehebdo
-MODEL_NAME=PADA
 
 TRAIN_BATCH_SIZE=32
 EVAL_BATCH_SIZE=32
 NUM_EPOCHS=5
 ALPHA_VAL=0.2
-GPU_ID=0
 ```
 
 
@@ -73,7 +70,7 @@ python ./src/utils/drf_extraction.py \
 --drf_set_location ./runs/${TASK_NAME}/${TRG_DOMAIN}/drf_sets
 ```
 
-This will save 4 files, each named by '<SRC_DOMAN_NAME>.pkl', in the following directory: './runs/<TASK_NAME>/<TRG_DOMAIN>/drf_sets'.
+This will save 4 files, each named by '<SRC_DOMAIN_NAME>.pkl', in the following directory: './runs/<TASK_NAME>/<TRG_DOMAIN>/drf_sets'.
 
 ### 3. Annotate training examples with DRF-based prompts
 
@@ -84,10 +81,10 @@ python ./src/utils/prompt_annotation.py \
     --drf_set_location ./runs/${TASK_NAME}/${TRG_DOMAIN}/drf_sets \
     --prompts_data_dir ./runs/${TASK_NAME}/${TRG_DOMAIN}/prompt_annotations
 ```
-For each source domain, this code creates a file with annotated prompt per each of its training example. The file is placed in the following path: './runs/<TASK_NAME>/<TRG_DOMAIN>/prompt_annotations/<SRC_DOMAN_NAME>/annotated_prompts_train.pt'. 
+For each source domain, this code creates a file with annotated prompt per each of its training example. The file is placed in the following path: './runs/<TASK_NAME>/<TRG_DOMAIN>/prompt_annotations/<SRC_DOMAIN_NAME>/annotated_prompts_train.pt'. 
 ** model hyperparameters grid for this step are specified in the paper.
 
-### 3. Run PADA
+### 4. Training PADA
 
 Train PADA on the prompt-generation task and the downstream task (conditioned on the annotated-prompts). Then. evaluate PADA on examples from the target domain where it first generates a prompt and then condition on this generated prompt, it performs the downstream task.   
 
@@ -99,12 +96,14 @@ CUDA_VISIBLE_DEVICES=${GPU_ID} python ./train.py \
   --num_train_epochs ${NUM_EPOCHS} \
   --train_batch_size ${TRAIN_BATCH_SIZE} \
   --eval_batch_size ${EVAL_BATCH_SIZE} \
-  --mixture_alpha ${ALPHA_VAL} \
+  --mixture_alpha ${ALPHA_VAL}
 ```
 
 The final results are saved in the following path: 
   "./runs/<TASK_NAME>/<TRG_DOMAIN>/PADA/e<NUM_EPOCHS>/b<TRAIN_BATCH_SIZE>/a<ALPHA_VAL>/test_results.txt".
-  For rumor detection, we report the final binary-F1 score on the target domain (of the best performing model on the source dev data), denoted as 'test_binary_f1'.
+  For rumor detection and aspect prediction, we report the final binary-F1 score on the target domain, denoted as 'test_binary_f1'.
+
+
 
 
 ## How to Cite PADA
