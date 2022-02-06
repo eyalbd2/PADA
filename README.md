@@ -106,7 +106,7 @@ The final results are saved in the following path:
   For rumor detection and aspect prediction, we report the final binary-F1 score on the target domain, denoted as 'test_binary_f1'.
 
 ## Evaluating Trained PADA Models
-You can evaluate checkpoints for all our experiments for a given task (Rumor Detection `rumor` or Aspect Prediction `absa`), by downloading the model files from [here](https://mega.nz/folder/AOBShToQ#tFEUfUq5uYoXexGT39OUwg), extracting them to a designated directory `CKPT_PATH` and running the `run-rumor-eval-checkpoints.sh` script:
+You can evaluate checkpoints for all our experiments for a given task (Rumor Detection `rumor` or Aspect Prediction `absa`), by downloading the model files from [here](https://mega.nz/folder/gKxn0QAS#rXLKkIzsxJmBWmKjkL0Uhw), extracting them to a designated directory `CKPT_PATH` and running the `run-rumor-eval-checkpoints.sh` script:
 ```
 bash run-rumor-eval-checkpoints.sh
 ```
@@ -114,7 +114,7 @@ bash run-rumor-eval-checkpoints.sh
 Evaluating a single trained PADA model checkpoint consists of the following steps:
 
 1. Create an experimental setup - Choose a single target domain of a given task (e.g., _charliehebdo_ from 'Rumor Detection') and its corresponding source domains (_ferguson_, _germanwings-crash_, _ottawashooting_, _sydneysiege_). 
-2. Download the model files from [here](https://mega.nz/folder/AOBShToQ#tFEUfUq5uYoXexGT39OUwg) and extract them to a designated directory `CKPT_PATH`.
+2. Download the model files from [here](https://mega.nz/folder/gKxn0QAS#rXLKkIzsxJmBWmKjkL0Uhw) and extract them to a designated directory `CKPT_PATH`.
 3. Run PADA - evaluate the trained PADA model checkpoint on its target domain test set.
 
 Next, we go through these steps using our running example:
