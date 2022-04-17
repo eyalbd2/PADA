@@ -1,6 +1,6 @@
 # PADA
 
-### Official code repository for the  paper ["PADA: Example-based Prompt Learning for on-the-fly Adaptation to Unseen Domains"](https://arxiv.org/abs/2102.12206) (TACL'2022)
+### Official code repository for the  paper ["PADA: Example-based Prompt Learning for on-the-fly Adaptation to Unseen Domains"](https://direct.mit.edu/tacl/article/doi/10.1162/tacl_a_00468/110538/PADA-Example-based-Prompt-Learning-for-on-the-fly) (TACL'2022)
  
 PADA is an example-based prompt generation model, which adapts on-the-fly to unseen domains (or distributions in general).
 It is trained on labeled data from multiple domains, and when presented with new examples (from unknown domains), it performs an autoregressive inference: (1) First generating an example-specific signature that maps the input example to the semantic space spanned by its training domains (denoted as DRFs); and then (2) it casts the generated signature as a prompt (prefix) and performs the downstream task. 
@@ -158,19 +158,34 @@ The final results are saved in the following path:
 
 ## How to Cite PADA
 ```
-@article{DBLP:journals/corr/abs-2102-12206,
-  author    = {Eyal Ben{-}David and
-               Nadav Oved and
-               Roi Reichart},
-  title     = {{PADA:} Example-based Prompt Learning for on-the-fly Adaptation to Unseen Domains},
-  journal   = {CoRR},
-  volume    = {abs/2102.12206},
-  year      = {2021},
-  url       = {https://arxiv.org/abs/2102.12206},
-  eprinttype = {arXiv},
-  eprint    = {2102.12206},
-  timestamp = {Tue, 02 Mar 2021 12:11:01 +0100},
-  biburl    = {https://dblp.org/rec/journals/corr/abs-2102-12206.bib},
-  bibsource = {dblp computer science bibliography, https://dblp.org}
+@article{10.1162/tacl_a_00468,
+    author = {Ben-David, Eyal and Oved, Nadav and Reichart, Roi},
+    title = "{PADA: Example-based Prompt Learning for on-the-fly Adaptation to
+                    Unseen Domains}",
+    journal = {Transactions of the Association for Computational Linguistics},
+    volume = {10},
+    pages = {414-433},
+    year = {2022},
+    month = {04},
+    abstract = "{Natural Language Processing algorithms have made incredible progress, but they
+                    still struggle when applied to out-of-distribution examples. We address a
+                    challenging and underexplored version of this domain adaptation problem, where
+                    an algorithm is trained on several source domains, and then applied to examples
+                    from unseen domains that are unknown at training time. Particularly, no
+                    examples, labeled or unlabeled, or any other knowledge about the target domain
+                    are available to the algorithm at training time. We present PADA: An example-based autoregressive Prompt learning
+                    algorithm for on-the-fly Any-Domain Adaptation, based on the T5 language model.
+                    Given a test example, PADA first generates a unique prompt for
+                    it and then, conditioned on this prompt, labels the example with respect to the
+                    NLP prediction task. PADA is trained to generate a prompt that is a token
+                    sequence of unrestricted length, consisting of Domain Related Features (DRFs)
+                    that characterize each of the source domains. Intuitively, the generated prompt
+                    is a unique signature that maps the test example to a semantic space spanned by
+                    the source domains. In experiments with 3 tasks (text classification and
+                    sequence tagging), for a total of 14 multi-source adaptation scenarios, PADA substantially outperforms strong baselines.1}",
+    issn = {2307-387X},
+    doi = {10.1162/tacl_a_00468},
+    url = {https://doi.org/10.1162/tacl\_a\_00468},
+    eprint = {https://direct.mit.edu/tacl/article-pdf/doi/10.1162/tacl\_a\_00468/2008061/tacl\_a\_00468.pdf},
 }
 ```
